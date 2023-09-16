@@ -96,6 +96,9 @@ while True:
                             cv2.circle(image, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
 
                     mpDraw.draw_landmarks(image, handLms, mpHands.HAND_CONNECTIONS)
+                    for a in range(4):
+                        for b in range(4):
+                            image = cv2.line(image, pts[a], pts[b], (255, 0, 255), 8)
 
                     tl_x, tl_y = pts[3]
                     bl_x, bl_y = pts[1]
@@ -107,17 +110,22 @@ while True:
                     paper_right_pos = max(tr_x, br_x)
                     paper_bottom_pos = max(bl_y, br_y)
 
-                    
+                    xPos_m = handLms.landmark[8].x * 1920
+                    yPos_m = handLms.landmark[8].y * 1080
 
-                    xPos = handLms.landmark[8].x * 1920
-                    yPos = handLms.landmark[8].y * 1080
+                    if paper_left_pos <= xPos_m <= paper_right_pos and paper_top_pos <= yPos_m <= paper_bottom_pos:
+                        # xPos = (paper_right_pos - xPos_m) / paper_left_pos * 1920
+                        # yPos = (paper_bottom_pos - yPos_m) / paper_top_pos * 1080
+                        xPos = (xPos_m - paper_right_pos) / (paper_left_pos - paper_right_pos)
+                        yPos = (yPos_m - paper_bottom_pos) / (paper_top_pos - paper_bottom_pos)
 
-
-                    if paper_left_pos <= xPos <= paper_right_pos and paper_top_pos <= yPos <= paper_bottom_pos:
-                        xPos = (paper_right_pos - xPos) / paper_left_pos  * 1920
-                        yPos = (paper_bottom_pos - yPos) / paper_top_pos * 1080
                         print(xPos, yPos)
-                        mouse.move(xPos, yPos, absolute=True)
+                        mouse.move(xPos * 1920, yPos * 1080, absolute=True)
+                    try:
+                        image = cv2.putText(image, str(xPos) + " " + str(yPos), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 225), 2, cv2.LINE_AA)
+                    except:
+                        pass
+                    image = cv2.putText(image, str(xPos_m) + " " + str(yPos_m), (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 225), 2, cv2.LINE_AA)
 
             cv2.imshow('Perspective Transformation', image)
             key = cv2.waitKey(1)
