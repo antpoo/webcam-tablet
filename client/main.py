@@ -1,10 +1,8 @@
-import cv2
+import cv2, threading, time
 import numpy as np
 import tkinter as tk
 from tkinter import Label, Button
 from PIL import Image, ImageTk
-import threading
-import time
 
 def update_camera_feed():
     global click_circles  
@@ -82,14 +80,15 @@ def on_click(event):
         update_camera_feed()
 
 
+# Create a Tkinter window
 root = tk.Tk()
 root.title("Camera Feed")
 
+# Create a label to display the camera feed
 label = Label(root)
 label.pack()
 
-
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 roi_coordinates = []
 click_circles = []
