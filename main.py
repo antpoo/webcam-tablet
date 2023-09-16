@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 import mediapipe as mp
 
 mpHands = mp.solutions.hands
-hands = mpHands.Hands(min_detection_confidence=0.15, min_tracking_confidence=0.8)
+hands = mpHands.Hands(min_detection_confidence=0.15, min_tracking_confidence=0.5)
 mpDraw = mp.solutions.drawing_utils
 
 tips = [4, 8, 12, 16, 20]
@@ -67,8 +67,10 @@ while True:
             [pts[2][0], pts[2][1]], \
             [pts[3][0], pts[3][1]]])
 
-        width_ratio = (max(abs(pts[0][0] - pts[1][0]), abs(pts[2][0] - pts[3][0])))/1920
-        height_ratio = (max(abs(pts[0][1] - pts[2][1]), abs(pts[1][1] - pts[3][1])))/1080
+        width_ratio = 1
+        height_ratio = 1
+        # width_ratio = (max(abs(pts[0][0] - pts[1][0]), abs(pts[2][0] - pts[3][0])))/1920
+        # height_ratio = (max(abs(pts[0][1] - pts[2][1]), abs(pts[1][1] - pts[3][1])))/1080
 
         print(width_ratio, height_ratio)
 
@@ -77,9 +79,11 @@ while True:
             success, frame = cap.read()
 
             image = cv2.warpPerspective(frame, M, (1920, 1080))
-            resized = cv2.resize(image, (image.shape[1], image.shape[0]*2))
+            # image = frame
+            # resized = cv2.resize(image, (image.shape[1], image.shape[0]*2))
+            resized = image
             imageRGB = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
-            results = hands.process(resized)
+            results = hands.process(imageRGB)
             saved_results = results
 
             # checking whether a hand is detected
