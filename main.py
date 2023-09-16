@@ -20,7 +20,7 @@ pts2 = np.float32([[0, 0], [1920, 0], [0, 1080], [1920, 1080]])
 cap = cv2.VideoCapture(1)
 cap.set(3, 1920)
 cap.set(4, 1080)
-cap.set(15, -6)
+cap.set(15, -4)
 
 # mouse callback function
 def draw_circle(event, x, y, flags, param):
