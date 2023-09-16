@@ -22,26 +22,16 @@
 
 hi
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ### Built With
 
 python
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 ### Installation
 
 you can't right now
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
 It's not done
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
