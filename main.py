@@ -2,9 +2,10 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 import mediapipe as mp
+import pyautogui
 
 mpHands = mp.solutions.hands
-hands = mpHands.Hands(min_detection_confidence=0.15, min_tracking_confidence=0.8)
+hands = mpHands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.8, model_complexity=1)
 mpDraw = mp.solutions.drawing_utils
 
 tips = [4, 8, 12, 16, 20]
@@ -15,10 +16,10 @@ pointIndex = 0
 # Calculate destination points to match the input image size
 pts2 = np.float32([[0, 0], [1920, 0], [0, 1080], [1920, 1080]])
 
-cap = cv2.VideoCapture(1
-                       )
+cap = cv2.VideoCapture(1)
 cap.set(3, 1920)
 cap.set(4, 1080)
+cap.set(15, -6)
 
 # mouse callback function
 def draw_circle(event, x, y, flags, param):
@@ -80,7 +81,7 @@ while True:
             image = cv2.warpPerspective(frame, M, (1920, 1080))
             resized = cv2.resize(image, (image.shape[1], image.shape[0]*2))
             imageRGB = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
-            results = hands.process(resized)
+            results = hands.process(imageRGB)
             saved_results = results
 
             # checking whether a hand is detected
@@ -94,10 +95,11 @@ while True:
                             cv2.circle(resized, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
 
                     mpDraw.draw_landmarks(resized, handLms, mpHands.HAND_CONNECTIONS)
-                    if handLms.landmark[8].x/width_ratio <= 1:
-                        print("x " + str(handLms.landmark[8].x/width_ratio))
-                    if handLms.landmark[8].y / height_ratio <= 1:
-                        print("y " + str(handLms.landmark[8].y/height_ratio))
+                    xPos = handLms.landmark[8].x / width_ratio
+                    yPos = handLms.landmark[8].y / height_ratio
+                    print(xPos, yPos)
+                    if xPos <= 1 and yPos <= 1:
+                        pyautogui.moveTo(xPos * 1920, yPos * 1080)
 
             cv2.imshow('Perspective Transformation', resized)
             key = cv2.waitKey(1)
