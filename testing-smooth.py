@@ -131,8 +131,8 @@ while True:
 
                         xMove = (xPos[0] + (xPos[1] - xPos[0])/smooth)
                         yMove = (yPos[0] + (yPos[1] - yPos[0])/smooth)
-                        print(xMove, xMove)
-                        mouse.move(yMove * 1920, yMove * 1080, absolute=True)
+                        print(xMove, yMove)
+                        mouse.move(xMove * 1920, yMove * 1080, absolute=True)
                     try:
                         image = cv2.putText(image, str(xPos) + " " + str(yPos), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 225), 2, cv2.LINE_AA)
                     except:
