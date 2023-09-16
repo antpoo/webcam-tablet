@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 import mediapipe as mp
+import detect_hands
+import perspective
 
 mpHands = mp.solutions.hands
 hands = mpHands.Hands(min_detection_confidence=0.15, min_tracking_confidence=0.8)
@@ -56,28 +58,12 @@ while True:
         selected_height = abs(pts[2][1] - pts[0][1])  # Calculate the height
 
         # Calculate destination points to match the selected portion's size
-        pts2 = np.float32([[0, 0], [selected_width, 0], [0, selected_height], [selected_width, selected_height]])
-
-        # The four points of the A4 paper in the image
-        pts1 = np.float32([ \
-            [pts[0][0], pts[0][1]], \
-            [pts[1][0], pts[1][1]], \
-            [pts[2][0], pts[2][1]], \
-            [pts[3][0], pts[3][1]]])
-
-        width_ratio = (max(abs(pts[0][0] - pts[1][0]), abs(pts[2][0] - pts[3][0])))/1920
-        height_ratio = (max(abs(pts[0][1] - pts[2][1]), abs(pts[1][1] - pts[3][1])))/1080
-
-        print(width_ratio, height_ratio)
-
-        M = cv2.getPerspectiveTransform(pts1, pts2)
+        M = perspective.init_transform(pts)
         while True:
             success, frame = cap.read()
 
-            image = cv2.warpPerspective(frame, M, (1920, 1080))
-            imageRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            results = hands.process(imageRGB)
-            saved_results = results
+            image = perspective.transform(frame, M)
+            results = detect_hands.get_landmarks(frame)
 
             # checking whether a hand is detected
             if results.multi_hand_landmarks:
@@ -86,15 +72,8 @@ while True:
                         h, w, c = image.shape
                         cx, cy = int(lm.x * w), int(lm.y * h)
 
-                        if id in tips:
-                            cv2.circle(image, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
-
                     mpDraw.draw_landmarks(image, handLms, mpHands.HAND_CONNECTIONS)
-                    if handLms.landmark[8].x/width_ratio <= 1:
-                        print(handLms.landmark[8].x/width_ratio)
-                    if handLms.landmark[8].y / height_ratio <= 1:
-                        print(handLms.landmark[8].y / height_ratio)
-
+            
             cv2.imshow('Perspective Transformation', image)
             key = cv2.waitKey(1)
 

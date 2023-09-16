@@ -3,13 +3,12 @@ import numpy as np
 
 width_ratio = 1
 height_ratio = 1
+width = 888
+height = 500
 
-def transform(frame, pts):    
-    global width_ratio, height_ratio
 
-    # TODO: Automatically calculate the max width/height
-    width = 888
-    height = 500
+def init_transform(pts):
+    global width, height, width_ratio, height_ratio
 
     selected_width = abs(pts[1][0] - pts[0][0])  # Calculate the width
     selected_height = abs(pts[2][1] - pts[0][1])  # Calculate the height
@@ -23,13 +22,15 @@ def transform(frame, pts):
         [pts[2][0], pts[2][1]], \
         [pts[3][0], pts[3][1]]])
 
-    M = cv2.getPerspectiveTransform(pts1, pts2)
-
-    warped = cv2.warpPerspective(frame, M, (width, height))
-
     width_ratio = (max(abs(pts[0][0] - pts[1][0]), abs(pts[2][0] - pts[3][0])))/width
     height_ratio = (max(abs(pts[0][1] - pts[2][1]), abs(pts[1][1] - pts[3][1])))/height
-
+    
+    M = cv2.getPerspectiveTransform(pts1, pts2)
+    return M
+    
+def transform(frame, M):    
+    global width, height, width_ratio, height_ratio
+    warped = cv2.warpPerspective(frame, M, (width, height))
 
     return warped
 
