@@ -3,6 +3,7 @@ import numpy as np
 import tkinter as tk
 from tkinter import Label, Button
 from PIL import Image, ImageTk
+import perspective
 
 def update_camera_feed():
     global click_circles  
@@ -11,7 +12,7 @@ def update_camera_feed():
     if ret:
         if roi_coordinates and len(roi_coordinates) == 4:
             pts = np.array(roi_coordinates, dtype=np.float32)
-            warped = perspective_transform(frame, pts)
+            warped = perspective.transform(frame, pts)
         else:
             warped = frame
 
@@ -53,18 +54,6 @@ def animate_circles():
 
         time.sleep(0.05) 
 
-def perspective_transform(frame, pts):
-    width = 888
-    height = 500
-
-    dst_pts = np.array([[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]], dtype=np.float32)
-
-    matrix = cv2.getPerspectiveTransform(pts, dst_pts)
-
-    warped = cv2.warpPerspective(frame, matrix, (width, height))
-
-    return warped
-
 def on_click(event):
     global roi_coordinates
     global click_circles
@@ -88,7 +77,7 @@ root.title("Camera Feed")
 label = Label(root)
 label.pack()
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 cap.set(3, 1920)
 cap.set(4, 1080)
 
