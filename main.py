@@ -6,11 +6,7 @@ import mediapipe as mp
 import pyautogui
 
 mpHands = mp.solutions.hands
-<<<<<<< HEAD
-hands = mpHands.Hands(min_detection_confidence=0.15, min_tracking_confidence=0.5)
-=======
 hands = mpHands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.8, model_complexity=1)
->>>>>>> 2d4e024765265a2213911f28ecb059b2f561d19c
 mpDraw = mp.solutions.drawing_utils
 
 tips = [4, 8, 12, 16, 20]
@@ -21,11 +17,7 @@ pointIndex = 0
 # Calculate destination points to match the input image size
 pts2 = np.float32([[0, 0], [1920, 0], [0, 1080], [1920, 1080]])
 
-<<<<<<< HEAD
-cap = cv2.VideoCapture(0)
-=======
 cap = cv2.VideoCapture(1)
->>>>>>> 2d4e024765265a2213911f28ecb059b2f561d19c
 cap.set(3, 1920)
 cap.set(4, 1080)
 cap.set(15, -6)
@@ -88,16 +80,8 @@ while True:
         while True:
             success, frame = cap.read()
 
-<<<<<<< HEAD
-            image = cv2.warpPerspective(frame, M, (1920, 1080))
-            # image = frame
-            # resized = cv2.resize(image, (image.shape[1], image.shape[0]*2))
-            resized = image
-            imageRGB = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
-=======
             image = frame
             imageRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
->>>>>>> 2d4e024765265a2213911f28ecb059b2f561d19c
             results = hands.process(imageRGB)
             saved_results = results
 
@@ -112,11 +96,28 @@ while True:
                             cv2.circle(image, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
 
                     mpDraw.draw_landmarks(image, handLms, mpHands.HAND_CONNECTIONS)
-                    xPos = handLms.landmark[8].x / width_ratio
-                    yPos = handLms.landmark[8].y / height_ratio
-                    print(xPos, yPos)
-                    if xPos <= 1 and yPos <= 1:
-                        mouse.move(xPos * 1920, yPos * 1080, True)
+
+                    tl_x, tl_y = pts[3]
+                    bl_x, bl_y = pts[1]
+                    tr_x, tr_y = pts[2]
+                    br_x, br_y = pts[0]
+                    
+                    paper_left_pos = min(tl_x, bl_x)
+                    paper_top_pos = min(tl_y, tr_y)
+                    paper_right_pos = max(tr_x, br_x)
+                    paper_bottom_pos = max(bl_y, br_y)
+
+                    
+
+                    xPos = handLms.landmark[8].x * 1920
+                    yPos = handLms.landmark[8].y * 1080
+
+
+                    if paper_left_pos <= xPos <= paper_right_pos and paper_top_pos <= yPos <= paper_bottom_pos:
+                        xPos = (paper_right_pos - xPos) / paper_left_pos  * 1920
+                        yPos = (paper_bottom_pos - yPos) / paper_top_pos * 1080
+                        print(xPos, yPos)
+                        mouse.move(xPos, yPos, absolute=True)
 
             cv2.imshow('Perspective Transformation', image)
             key = cv2.waitKey(1)
@@ -124,6 +125,8 @@ while True:
             plt.show()
             if key == 27:
                 break
+
+            # print(pts)
 
 cap.release()
 cv2.destroyAllWindows()
