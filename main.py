@@ -93,10 +93,10 @@ while True:
                             cv2.circle(image, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
 
                     mpDraw.draw_landmarks(image, handLms, mpHands.HAND_CONNECTIONS)
-                    # if handLms.landmark[8].x/width_ratio <= 1:
-                    #     print(handLms.landmark[8].x/width_ratio)
-                    # if handLms.landmark[8].y / height_ratio <= 1:
-                    #     print(handLms.landmark[8].y / height_ratio)
+                    if handLms.landmark[8].x/width_ratio <= 1:
+                        print(handLms.landmark[8].x/width_ratio)
+                    if handLms.landmark[8].y / height_ratio <= 1:
+                        print(handLms.landmark[8].y / height_ratio)
 
             cv2.imshow('Perspective Transformation', image)
             key = cv2.waitKey(1)
