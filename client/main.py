@@ -54,8 +54,8 @@ def animate_circles():
         time.sleep(0.05) 
 
 def perspective_transform(frame, pts):
-    width = 400  
-    height = 300  
+    width = 888
+    height = 500
 
     dst_pts = np.array([[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]], dtype=np.float32)
 
@@ -88,7 +88,9 @@ root.title("Camera Feed")
 label = Label(root)
 label.pack()
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
+cap.set(3, 1920)
+cap.set(4, 1080)
 
 roi_coordinates = []
 click_circles = []
