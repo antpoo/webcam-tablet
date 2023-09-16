@@ -3,6 +3,10 @@ import numpy as np
 from matplotlib import pyplot as plt
 import mediapipe as mp
 
+mpHands = mp.solutions.hands
+hands = mpHands.Hands(min_detection_confidence=0.15, min_tracking_confidence=0.8)
+mpDraw = mp.solutions.drawing_utils
+
 tips = [4, 8, 12, 16, 20]
 
 pts = [(0, 0), (0, 0), (0, 0), (0, 0)]
