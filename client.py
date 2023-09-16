@@ -77,7 +77,7 @@ root.title("Camera Feed")
 label = Label(root)
 label.pack()
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 cap.set(3, 1920)
 cap.set(4, 1080)
 

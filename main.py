@@ -15,7 +15,9 @@ pointIndex = 0
 # Calculate destination points to match the input image size
 pts2 = np.float32([[0, 0], [1920, 0], [0, 1080], [1920, 1080]])
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
+cap.set(3, 1920)
+cap.set(3, 1080)
 
 # mouse callback function
 def draw_circle(event, x, y, flags, param):
