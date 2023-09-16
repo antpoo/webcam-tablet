@@ -15,7 +15,7 @@ pointIndex = 0
 # Calculate destination points to match the input image size
 pts2 = np.float32([[0, 0], [1920, 0], [0, 1080], [1920, 1080]])
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 cap.set(3, 1920)
 cap.set(4, 1080)
 
