@@ -83,8 +83,8 @@ while True:
             saved_results = results
 
             # checking whether a hand is detected
-            if results.multi_hand_landmarks:
-                for handLms in results.multi_hand_landmarks: # working with each hand
+            if saved_results.multi_hand_landmarks:
+                for handLms in saved_results.multi_hand_landmarks: # working with each hand
                     for id, lm in enumerate(handLms.landmark):
                         h, w, c = resized.shape
                         cx, cy = int(lm.x * w), int(lm.y * h)
