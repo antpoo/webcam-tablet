@@ -17,7 +17,9 @@ pointIndex = 0
 # Calculate destination points to match the input image size
 pts2 = np.float32([[0, 0], [1920, 0], [0, 1080], [1920, 1080]])
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
+cap.set(3, 1920)
+cap.set(4, 1080)
 
 # mouse callback function
 def draw_circle(event, x, y, flags, param):
@@ -62,8 +64,11 @@ while True:
         while True:
             success, frame = cap.read()
 
-            image = perspective.transform(frame, M)
-            results = detect_hands.get_landmarks(frame)
+            image = cv2.warpPerspective(frame, M, (1920, 1080))
+            imageRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            resized = cv2.resize(imageRGB, (imageRGB.shape[1], imageRGB.shape[0]*2), interpolation=cv2.INTER_AREA)
+            results = hands.process(resized)
+            saved_results = results
 
             # checking whether a hand is detected
             if results.multi_hand_landmarks:
