@@ -85,6 +85,7 @@ def smoothly_move_mouse(dst_x, dst_y):
 
         time.sleep(random.uniform(0.001, 0.003))
 
+click_threshold = 0
 
 while True:
     if (selectFourPoints()):
@@ -145,8 +146,15 @@ while True:
                     paper_right_pos = max(tr_x, br_x)
                     paper_bottom_pos = max(bl_y, br_y)
 
+                    # p = [handLms.landmark[8].x * 1920, handLms.landmark[8].y * 1000]  # your original point
+                    # xPos_m = (M[0][0] * p[0] + M[0][1] * p[1] + M[0][2]) / ((M[2][0] * p[0] + M[2][1] * p[1] + M[2][2]))
+                    # yPos_m = (M[1][0] * p[0] + M[1][1] * p[1] + M[1][2]) / ((M[2][0] * p[0] + M[2][1] * p[1] + M[2][2]))
                     xPos_m = handLms.landmark[8].x * 1920
                     yPos_m = handLms.landmark[8].y * 1080
+                    zPos_m = handLms.landmark[8].z
+                    #
+                    # xPos = (xPos_m - paper_right_pos) / (paper_left_pos - paper_right_pos)
+                    # yPos = (yPos_m - paper_bottom_pos) / (paper_top_pos - paper_bottom_pos)
 
                     if paper_left_pos <= xPos_m <= paper_right_pos and paper_top_pos <= yPos_m <= paper_bottom_pos:
                         # xPos = (paper_right_pos - xPos_m) / paper_left_pos * 1920
@@ -154,7 +162,14 @@ while True:
                         xPos = (xPos_m - paper_right_pos) / (paper_left_pos - paper_right_pos)
                         yPos = (yPos_m - paper_bottom_pos) / (paper_top_pos - paper_bottom_pos)
 
-                        print(xPos, yPos)
+                        print(xPos)
+                        print(yPos)
+
+                        if zPos_m <= click_threshold and click_threshold != 0.0:
+                            mouse.press()
+                            print('click')
+                        else:
+                            mouse.release()
 
                         mouse_thread = threading.Thread(target=smoothly_move_mouse, args=(xPos * 1920, yPos * 1080))
                         mouse_thread.start()  # Start the thread
@@ -170,6 +185,8 @@ while True:
             plt.show()
             if key == 27:
                 break
+            elif key == ord(' '):
+                click_threshold = zPos_m
 
             # print(pts)
 

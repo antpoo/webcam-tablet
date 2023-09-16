@@ -1,12 +1,16 @@
+import math
+import random
+import time
 import cv2
 import mouse
 import numpy as np
 from matplotlib import pyplot as plt
 import mediapipe as mp
-import pyautogui
+import threading
+import perspective
 
 mpHands = mp.solutions.hands
-hands = mpHands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.8, model_complexity=1)
+hands = mpHands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.8, model_complexity=1, max_num_hands=1)
 mpDraw = mp.solutions.drawing_utils
 
 tips = [4, 8, 12, 16, 20]
@@ -20,7 +24,8 @@ pts2 = np.float32([[0, 0], [1920, 0], [0, 1080], [1920, 1080]])
 cap = cv2.VideoCapture(1)
 cap.set(3, 1920)
 cap.set(4, 1080)
-cap.set(15, -4)
+cap.set(15, -6)
+
 
 # mouse callback function
 def draw_circle(event, x, y, flags, param):
@@ -51,8 +56,11 @@ def selectFourPoints():
 
     return True
 
+
 cv2.namedWindow('Select Corners')
 cv2.setMouseCallback('Select Corners', draw_circle)
+
+click_threshold = 0
 
 while True:
     if (selectFourPoints()):
@@ -77,6 +85,9 @@ while True:
         # height_ratio = (max(abs(pts[0][1] - pts[2][1]), abs(pts[1][1] - pts[3][1])))/1080
 
         print(width_ratio, height_ratio)
+
+        M = perspective.init_transform(pts)
+
         while True:
             success, frame = cap.read()
 
@@ -87,7 +98,7 @@ while True:
 
             # checking whether a hand is detected
             if saved_results.multi_hand_landmarks:
-                for handLms in saved_results.multi_hand_landmarks: # working with each hand
+                for handLms in saved_results.multi_hand_landmarks:  # working with each hand
                     for id, lm in enumerate(handLms.landmark):
                         h, w, c = image.shape
                         cx, cy = int(lm.x * w), int(lm.y * h)
@@ -104,14 +115,21 @@ while True:
                     bl_x, bl_y = pts[1]
                     tr_x, tr_y = pts[2]
                     br_x, br_y = pts[0]
-                    
+
                     paper_left_pos = min(tl_x, bl_x)
                     paper_top_pos = min(tl_y, tr_y)
                     paper_right_pos = max(tr_x, br_x)
                     paper_bottom_pos = max(bl_y, br_y)
 
+                    # p = [handLms.landmark[8].x * 1920, handLms.landmark[8].y * 1000]  # your original point
+                    # xPos_m = (M[0][0] * p[0] + M[0][1] * p[1] + M[0][2]) / ((M[2][0] * p[0] + M[2][1] * p[1] + M[2][2]))
+                    # yPos_m = (M[1][0] * p[0] + M[1][1] * p[1] + M[1][2]) / ((M[2][0] * p[0] + M[2][1] * p[1] + M[2][2]))
                     xPos_m = handLms.landmark[8].x * 1920
                     yPos_m = handLms.landmark[8].y * 1080
+                    zPos_m = handLms.landmark[8].z
+                    #
+                    # xPos = (xPos_m - paper_right_pos) / (paper_left_pos - paper_right_pos)
+                    # yPos = (yPos_m - paper_bottom_pos) / (paper_top_pos - paper_bottom_pos)
 
                     if paper_left_pos <= xPos_m <= paper_right_pos and paper_top_pos <= yPos_m <= paper_bottom_pos:
                         # xPos = (paper_right_pos - xPos_m) / paper_left_pos * 1920
@@ -119,13 +137,23 @@ while True:
                         xPos = (xPos_m - paper_right_pos) / (paper_left_pos - paper_right_pos)
                         yPos = (yPos_m - paper_bottom_pos) / (paper_top_pos - paper_bottom_pos)
 
-                        print(xPos, yPos)
-                        mouse.move(xPos * 1920, yPos * 1080, absolute=True)
+                        print(xPos)
+                        print(yPos)
+
+                        if zPos_m <= click_threshold and click_threshold != 0.0:
+                            mouse.press()
+                            print('click')
+                        else:
+                            mouse.release()
+
+                        mouse.move(xPos * 1920, yPos * 1080, True)
                     try:
-                        image = cv2.putText(image, str(xPos) + " " + str(yPos), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 225), 2, cv2.LINE_AA)
+                        image = cv2.putText(image, str(xPos) + " " + str(yPos), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                            (255, 0, 225), 2, cv2.LINE_AA)
                     except:
                         pass
-                    image = cv2.putText(image, str(xPos_m) + " " + str(yPos_m), (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 225), 2, cv2.LINE_AA)
+                    image = cv2.putText(image, str(xPos_m) + " " + str(yPos_m), (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                        (255, 0, 225), 2, cv2.LINE_AA)
 
             cv2.imshow('Perspective Transformation', image)
             key = cv2.waitKey(1)
@@ -133,6 +161,8 @@ while True:
             plt.show()
             if key == 27:
                 break
+            elif key == ord(' '):
+                click_threshold = zPos_m
 
             # print(pts)
 
