@@ -78,7 +78,7 @@ while True:
 
             image = cv2.warpPerspective(frame, M, (1920, 1080))
             imageRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            resized = cv2.resize(imageRGB, (imageRGB.shape[1], imageRGB.shape[0]*2), interpolation=cv2.INTER_AREA)
+            resized = cv2.resize(imageRGB, (imageRGB.shape[1], imageRGB.shape[0]*2))
             results = hands.process(resized)
             saved_results = results
 
@@ -86,19 +86,19 @@ while True:
             if results.multi_hand_landmarks:
                 for handLms in results.multi_hand_landmarks: # working with each hand
                     for id, lm in enumerate(handLms.landmark):
-                        h, w, c = image.shape
+                        h, w, c = resized.shape
                         cx, cy = int(lm.x * w), int(lm.y * h)
 
                         if id in tips:
-                            cv2.circle(image, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
+                            cv2.circle(resized, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
 
-                    mpDraw.draw_landmarks(image, handLms, mpHands.HAND_CONNECTIONS)
+                    mpDraw.draw_landmarks(resized, handLms, mpHands.HAND_CONNECTIONS)
                     if handLms.landmark[8].x/width_ratio <= 1:
-                        print(handLms.landmark[8].x/width_ratio)
+                        print("x " + str(handLms.landmark[8].x/width_ratio))
                     if handLms.landmark[8].y / height_ratio <= 1:
-                        print(handLms.landmark[8].y / height_ratio)
+                        print("y " + str(handLms.landmark[8].y/height_ratio))
 
-            cv2.imshow('Perspective Transformation', image)
+            cv2.imshow('Perspective Transformation', resized)
             key = cv2.waitKey(1)
 
             plt.show()
