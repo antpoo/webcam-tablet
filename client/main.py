@@ -81,25 +81,13 @@ def on_click(event):
     if len(roi_coordinates) == 4:
         update_camera_feed()
 
-def reset_roi():
-    global roi_coordinates
-    global click_circles
 
-    roi_coordinates = []
-    click_circles = []
-    update_camera_feed()
-
-# Create a Tkinter window
 root = tk.Tk()
 root.title("Camera Feed")
 
-# Create a label to display the camera feed
 label = Label(root)
 label.pack()
 
-# Create a button to reset the ROI
-reset_button = Button(root, text="Reset ROI", command=reset_roi)
-reset_button.pack()
 
 cap = cv2.VideoCapture(1)
 
