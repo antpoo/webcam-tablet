@@ -3,7 +3,6 @@ import mouse
 import numpy as np
 from matplotlib import pyplot as plt
 import mediapipe as mp
-import pyautogui
 
 mpHands = mp.solutions.hands
 hands = mpHands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.8, model_complexity=1)
@@ -13,7 +12,6 @@ tips = [4, 8, 12, 16, 20]
 
 pts = [(0, 0), (0, 0), (0, 0), (0, 0)]
 pointIndex = 0
-smooth = 7
 
 # Calculate destination points to match the input image size
 pts2 = np.float32([[0, 0], [1920, 0], [0, 1080], [1920, 1080]])
@@ -23,8 +21,9 @@ cap.set(3, 1920)
 cap.set(4, 1080)
 cap.set(15, -4)
 
-xPos = [0]
-yPos = [0]
+# Gaussian smoothing parameters
+kernel_size = (5, 5)  # You can adjust the kernel size
+sigma_x = 0  # You can adjust the standard deviation
 
 # mouse callback function
 def draw_circle(event, x, y, flags, param):
@@ -33,18 +32,13 @@ def draw_circle(event, x, y, flags, param):
     global pts
 
     if event == cv2.EVENT_LBUTTONDOWN:
-        print("Mouse Callback!")
         cv2.circle(img, (x, y), 15, (255, 0, 255), cv2.FILLED)
         pts[pointIndex] = (x, y)
         pointIndex = pointIndex + 1
 
-
 def selectFourPoints():
     global img
     global pointIndex
-
-    print("Please select 4 points, by double clicking on each of them in the order: \n\
-    top left, top right, bottom left, bottom right.")
 
     while (pointIndex != 4):
         _, img = cap.read()
@@ -77,12 +71,12 @@ while True:
 
         width_ratio = 1
         height_ratio = 1
-        # width_ratio = (max(abs(pts[0][0] - pts[1][0]), abs(pts[2][0] - pts[3][0])))/1920
-        # height_ratio = (max(abs(pts[0][1] - pts[2][1]), abs(pts[1][1] - pts[3][1])))/1080
 
-        print(width_ratio, height_ratio)
         while True:
             success, frame = cap.read()
+
+            # Apply Gaussian blur
+            frame = cv2.GaussianBlur(frame, kernel_size, sigma_x)
 
             image = frame
             imageRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -118,26 +112,11 @@ while True:
                     yPos_m = handLms.landmark[8].y * 1080
 
                     if paper_left_pos <= xPos_m <= paper_right_pos and paper_top_pos <= yPos_m <= paper_bottom_pos:
-                        # xPos = (paper_right_pos - xPos_m) / paper_left_pos * 1920
-                        # yPos = (paper_bottom_pos - yPos_m) / paper_top_pos * 1080
-                        if len(xPos) == 1:
-                            xPos.append((xPos_m - paper_right_pos) / (paper_left_pos - paper_right_pos))
-                            yPos.append((yPos_m - paper_bottom_pos) / (paper_top_pos - paper_bottom_pos))
-                        else:
-                            xPos[0] = xPos[1]
-                            yPos[0] = yPos[1]
-                            xPos[1] = (xPos_m - paper_right_pos) / (paper_left_pos - paper_right_pos)
-                            yPos[1] = (yPos_m - paper_bottom_pos) / (paper_top_pos - paper_bottom_pos)
+                        xPos = (xPos_m - paper_right_pos) / (paper_left_pos - paper_right_pos)
+                        yPos = (yPos_m - paper_bottom_pos) / (paper_top_pos - paper_bottom_pos)
 
-                        xMove = (xPos[0] + (xPos[1] - xPos[0])/smooth)
-                        yMove = (yPos[0] + (yPos[1] - yPos[0])/smooth)
-                        print(xMove, yMove)
-                        mouse.move(xMove * 1920, yMove * 1080, absolute=True)
-                    try:
-                        image = cv2.putText(image, str(xPos) + " " + str(yPos), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 225), 2, cv2.LINE_AA)
-                    except:
-                        pass
-                    image = cv2.putText(image, str(xPos_m) + " " + str(yPos_m), (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 225), 2, cv2.LINE_AA)
+                        print(xPos, yPos)
+                        mouse.move(xPos * 1920, yPos * 1080, absolute=True)
 
             cv2.imshow('Perspective Transformation', image)
             key = cv2.waitKey(1)
@@ -146,9 +125,4 @@ while True:
             if key == 27:
                 break
 
-            # print(pts)
-
 cap.release()
-cv2.destroyAllWindows()
-
-
