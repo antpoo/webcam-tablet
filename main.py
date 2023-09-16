@@ -77,14 +77,14 @@ while True:
             success, frame = cap.read()
 
             image = cv2.warpPerspective(frame, M, (1920, 1080))
-            imageRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            resized = cv2.resize(imageRGB, (imageRGB.shape[1], imageRGB.shape[0]*2))
+            resized = cv2.resize(image, (image.shape[1], image.shape[0]*2))
+            imageRGB = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
             results = hands.process(resized)
             saved_results = results
 
             # checking whether a hand is detected
-            if results.multi_hand_landmarks:
-                for handLms in results.multi_hand_landmarks: # working with each hand
+            if saved_results.multi_hand_landmarks:
+                for handLms in saved_results.multi_hand_landmarks: # working with each hand
                     for id, lm in enumerate(handLms.landmark):
                         h, w, c = resized.shape
                         cx, cy = int(lm.x * w), int(lm.y * h)
