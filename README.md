@@ -31,7 +31,7 @@ A silly app, for people that can't afford a drawing tablet or touchpad for their
 
 Install all prerequisites:
 ```sh
-$ npm install opencv-python mediapipe mouse
+$ pip install opencv-python mediapipe mouse
 ```
 
 Run the python script:
