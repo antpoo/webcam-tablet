@@ -9,28 +9,32 @@
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">Best-README-Template</h3>
+  <h2 align="center">Best-README-Template</h2>
 
   <p align="center">
-    An awesome README template to jumpstart your projects!
+    Turn any surface into a touchscreen for your PC.
   </p>
 </div>
 
 
-
 ## About The Project
 
-hi
+A silly app, for people that can't afford a drawing tablet or touchpad for their computer. Built for Hack The North 2023!
 
 ### Built With
 
-python
+- Python
+- OpenCV
+- [Google's Mediapipe](https://developers.google.com/mediapipe)
 
 ### Installation
 
-you can't right now
+Install all prerequisites:
+```sh
+$ npm install opencv-python mediapipe mouse
+```
 
-<!-- USAGE EXAMPLES -->
-## Usage
-
-It's not done
+Run the python script:
+```sh
+$ python main.py
+```
