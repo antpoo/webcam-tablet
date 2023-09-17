@@ -9,7 +9,7 @@
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h2 align="center">Best-README-Template</h2>
+  <h1 align="center">TableTablet</h1>
 
   <p align="center">
     Turn any surface into a touchscreen for your PC.
