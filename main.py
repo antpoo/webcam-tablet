@@ -3,6 +3,7 @@ import random
 import time
 import cv2
 import mouse
+import keyboard
 import numpy as np
 from matplotlib import pyplot as plt
 import mediapipe as mp
@@ -10,7 +11,11 @@ import threading
 import perspective
 
 mpHands = mp.solutions.hands
+mpHands2 = mp.solutions.hands
+
 hands = mpHands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.8, model_complexity=1, max_num_hands=1)
+hands2 = mpHands2.Hands(min_detection_confidence=0.4, min_tracking_confidence=0.8, model_complexity=1,
+                       max_num_hands=1)
 mpDraw = mp.solutions.drawing_utils
 
 tips = [4, 8, 12, 16, 20]
@@ -51,8 +56,13 @@ def selectFourPoints():
     print("Please select 4 points, by double clicking on each of them in the order: \n\
     top left, top right, bottom left, bottom right.")
 
+
+
     while (pointIndex != 4):
         _, img = cap.read()
+        img = cv2.putText(img, "Please select 4 points, by clicking on each of them in the order: top left, top right, bottom left, bottom right.",
+                            (50, 900), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                            (255, 0, 225), 2, cv2.LINE_AA)
         cv2.imshow('Select Corners', img)
         key = cv2.waitKey(20) & 0xFF
         if key == 27:
@@ -72,6 +82,14 @@ cv2.setMouseCallback('Select Corners', draw_circle)
 
 click_threshold = 0
 hover_threshold = 0
+
+ltx, lty, ltz = 0, 0, 0
+lkx, lky, lkz = 0, 0, 0
+
+kb = True
+db_mode = False
+def dis(x1, y1, z1, x2, y2, z2):
+    return math.sqrt((x1-x2) ** 2 + (y1-y2) ** 2 + (z1-z2) ** 2)
 
 while True:
     if (selectFourPoints()):
@@ -101,11 +119,19 @@ while True:
 
         while True:
             success, frame = cap.read()
+            success, frame2 = cap.read()
+
 
             image = frame
             imageRGB = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             results = hands.process(imageRGB)
             saved_results = results
+
+            try:
+                image = cv2.putText(image, "Press CONTROL to click" if kb else "Press SPACE to calibrate touch clicking", (50, 900), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                    (255, 0, 225), 2, cv2.LINE_AA)
+            except:
+                pass
 
             # checking whether a hand is detected
             if saved_results.multi_hand_landmarks:
@@ -121,6 +147,7 @@ while True:
                     for a in range(4):
                         for b in range(4):
                             image = cv2.line(image, pts[a], pts[b], (255, 0, 255), 8)
+
 
                     tl_x, tl_y = calcPerspective(pts[3], M)
                     bl_x, bl_y = calcPerspective(pts[1], M)
@@ -151,7 +178,13 @@ while True:
                     # print(paper_right_pos)
                     # print(paper_bottom_pos)
                     # print(" ")
-                    if 0 < xPos_m < paper_left_pos and 0 < yPos_m < paper_top_pos and zPos_m <= hover_threshold and hover_threshold != 0.0:
+                    if 0 < xPos_m < paper_left_pos and 0 < yPos_m < paper_top_pos: #nd zPos_m <= hover_threshold and hover_threshold != 0.0:
+
+                        if not kb and zPos_m >= click_threshold and click_threshold != 0.0 or kb and keyboard.is_pressed('ctrl'):
+                            mouse.press()
+                            print('click')
+                        else:
+                            mouse.release()
                         # xPos = (paper_right_pos - xPos_m) / paper_left_pos * 1920
                         # yPos = (paper_bottom_pos - yPos_m) / paper_top_pos * 1080
                         # xPos = (xPos_m - paper_right_pos) / (paper_left_pos - paper_right_pos)
@@ -162,11 +195,8 @@ while True:
                         # print(xPos)
                         # print(yPos)
 
-                        if zPos_m >= click_threshold and click_threshold != 0.0:
-                            mouse.press()
-                            print('click')
-                        else:
-                            mouse.release()
+                        # get knuckle position
+                        kx, ky, kz = handLms.landmark[5].x, handLms.landmark[5].y, handLms.landmark[5].z
 
                         if len(xPos) == 1:
                             xPos.append((xPos_m - paper_right_pos) / (paper_left_pos - paper_right_pos))
@@ -183,27 +213,63 @@ while True:
                         mouse.move(xMove * 1920, yMove * 1080, absolute=True)
                     else:
                         mouse.release()
-                    try:
-                        image = cv2.putText(image, str(xPos) + " " + str(yPos), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                                            (255, 0, 225), 2, cv2.LINE_AA)
-                    except:
-                        pass
-                    image = cv2.putText(image, str(xPos_m) + " " + str(yPos_m), (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                                        (255, 0, 225), 2, cv2.LINE_AA)
-                    image = cv2.putText(image, str(zPos_m) + " " + str(click_threshold), (50, 150),
-                                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 225), 2, cv2.LINE_AA)
 
-            cv2.imshow('Perspective Transformation', image)
+                    if db_mode:
+                        try:
+                            image = cv2.putText(image, "x and y relative to tablet area: " + str(xPos) + " " + str(yPos), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                                (255, 0, 225), 2, cv2.LINE_AA)
+                        except:
+                            pass
+                        image = cv2.putText(image, "x: " + str(xPos_m) + " | y: " + str(yPos_m), (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                            (255, 0, 225), 2, cv2.LINE_AA)
+                        try:
+                            image = cv2.putText(image, "z: " + str(zPos_m) + " | click threshold: " + str(click_threshold), (50, 150),
+                                            cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 225), 2, cv2.LINE_AA)
+                        except:
+                            pass
+
+
+            #
+            # correctedImage = cv2.warpPerspective(frame2, M, (1920, 1080))
+            # results2 = hands2.process(cv2.cvtColor(correctedImage, cv2.COLOR_BGR2RGB))
+            # saved_results2 = results2
+            # if saved_results2.multi_hand_landmarks:
+            #     for handLms2 in saved_results2.multi_hand_landmarks:  # working with each hand
+            #         print("updating z")
+            #         zPos_m = handLms2.landmark[8].z
+            #         try:
+            #             if zPos_m >= click_threshold and click_threshold != 0.0:
+            #                 mouse.press()
+            #                 print('click')
+            #                 continue
+            #             else:
+            #                 mouse.release()
+            #         except:
+            #             mouse.release()
+            cv2.imshow('Image', image)
+            #
             key = cv2.waitKey(1)
 
             plt.show()
             if key == 27:
                 break
-            elif key == ord(' '):
-                click_threshold = zPos_m
             elif key == ord('1'):
-                hover_threshold = zPos_m
-                print("Hover Threshold:", hover_threshold)
+                kb = not kb
+            elif key == ord(' '):
+                if not kb:
+                    click_threshold = zPos_m
+            elif key == ord('0'):
+                db_mode = not db_mode
+
+            # elif key == ord('1'):
+            #     hover_threshold = zPos_m
+            #     print("Hover Threshold:", hover_threshold)
+
+            try:
+                ltx, lty, ltz = xMove, yMove, zPos_m
+                lkx, lky, lkz = kx, ky, kz
+            except:
+                pass
 
             # print(pts)
 
