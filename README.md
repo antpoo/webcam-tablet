@@ -19,7 +19,7 @@
 
 ## About The Project
 
-A silly app, for people that can't afford a drawing tablet or touchpad for their computer. Built for Hack The North 2023!
+A silly app, for people that can't afford a drawing tablet or touchpad for their computer.
 
 ### Built With
 
